@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Blog</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <div class="top-box">
+      <h1>LRU Caching</h1>
+    </div>
+    <div class="middle-box">
+      <h2>LRU Caching using doubly linked list and hashmap</h2>
+      <img src="./images/LRU Cache.png" alt="" />
+      <h3>Prerequisites for learning LRU</h3>
+      <ul>
+        <li>Time and space complexity</li>
+        <li>LinkedList</li>
+        <li>HashTables</li>
+      </ul>
+      <h3>Theory</h3>
+      <p>
+        LRU stands for Least Recently Used. Before getting into LRU, let's try
+        to understand what is caching and why do we need caching.
+      </p>
+      <p>
+        Cache memory is a type of memory which have fast read/write operations
+        but is limited in size. So, it's always better if we can read from cache
+        instead of going to our database which is mostly hdd/ssd. This process
+        of setting and getting data from cache is called caching. As the size of
+        cache is limited, so in order to maintain the data in cache we use LRU
+        caching technique.
+      </p>
+      <p>
+        So, basically what happens is that we keep inserting the data which is
+        being used recently into cache unless it's full. If the same data is
+        requested, we go into our cache and returns it. If you see, now we have
+        two kinds of data, new data and old data. So we can have two conditions:
+      </p>
+      <ol>
+        <li>If cache is full and we have to insert a new data, or</li>
+        <li>If the requested data is already present in cache</li>
+      </ol>
+      <p>
+        Let's see the first point. If cache is full and we have to insert a new
+        data, we can replace the oldest data and insert the new one. So now if
+        you notice, we have to maintain two points. One for new data and one for
+        the oldest data. Also, we want to access these two data in O(1)
+        operation. So, we can use a LinkedList because we can have two pointers
+        at head and tail and we can anytime access them in O(1) time.
+      </p>
+      <p>
+        Let's see condition two, If the requested data is already present we
+        will fetch it and return it but now it's the latest data so we have to
+        place it at the new data position. To fetch the data from head and tail
+        is O(1), but what if the data is in the middle, we have to traverse and
+        that is not O(1) operation. But it can become a O(1) operation if we
+        know it's address, so why not store the address of every data. Here we
+        can use a hashmap, which will have a key value pair, value will be the
+        whole Node as we need the pointers also. Also now here you see we need
+        both next and previous pointer of a node. So instead of using singly
+        LinkedList we can use a doubly LinkedList.
+      </p>
+      <p>
+        So now we see that we can get the node in O(1), and set it in O(1). How
+        awesome is it.
+      </p>
+      <p>
+        I will be coding in Javascript but if you understand the logic, it's
+        easy to implement.
+      </p>
+      <p>
+        First we will have class Node, with next,prev,data and key properties.
+      </p>
+      <code
+        >class Node{<br />
+        &nbsp;&nbsp;constructor(key,value){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;this.key = key;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;this.data = value;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;this.next = null;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;this.prev = null;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        }
+      </code>
+      <p>
+        Next, we have to build a LRUCache class or function with get and set
+        implementation as below.
+      </p>
+      <code class="js-code">
+        // Constructor : Initializes the LRUCache with capacity <br />
+        module.exports = {<br />
+
+        LRUCache: function(capacity){<br />
+        let limit = capacity;<br />
+        let size = 0;<br />
+        let head = null;<br />
+        let tail = null;<br />
+        let hm = new Map();<br />
+        <br />
+        return {<br />
+        // get function returns an integer<br />
+        &nbsp;&nbsp;get: function(key){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;if(hm.has(key)){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;let node = hm.get(key);<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;this.set(key,node.data);<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;return node.data;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;return -1;<br />
+        },<br />
+        // set returns nothing<br />
+        set: function(key, value){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;let checkExistingKey = hm.get(key);<br />
+        <br />
+        &nbsp;&nbsp;&nbsp;&nbsp;if(checkExistingKey){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hm.delete(key);<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(checkExistingKey.prev!=null){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;checkExistingKey.prev.next
+        = checkExistingKey.next;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else{<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head =
+        checkExistingKey.next;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(checkExistingKey.next!=null){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;checkExistingKey.next.prev
+        = checkExistingKey.prev;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else{<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tail =
+        checkExistingKey.prev;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        <br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size--;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;else if(size == limit){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hm.delete(tail.key);<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(tail.prev!=null){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tail.prev.next =
+        tail.next;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else{<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head = tail.next;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(tail.next!=null){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tail.next.prev = tail.prev;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else{<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tail = tail.prev;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        <br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size--;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        <br />
+        &nbsp;&nbsp;&nbsp;&nbsp;let newNode = new Node();<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;newNode.data = value;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;newNode.key = key;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;if(head == null){<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head = tail = newNode;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;else{<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newNode.next = head;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head.prev = newNode;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head = newNode;<br />
+
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;hm.set(key,head);<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;size++;<br />
+        &nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;}<br />
+        &nbsp;}<br />
+        }<br />
+      </code>
+    </div>
+    <div class="bottom-container">
+      <a class="footer-link" href="https://www.linkedin.com/in/dhatedone/"
+        >LinkedIn</a
+      >
+      <a class="footer-link" href="https://twitter.com/Calyfso_o">Twitter</a>
+      <a class="footer-link" href="./index.html">Home</a>
+      <p class="copyright-content">© 2022 Sagar Gurung @ Level 500</p>
+    </div>
+  </body>
+</html>

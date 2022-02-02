@@ -118,3 +118,41 @@ hr {
   color: aquamarine;
   text-decoration: none;
 }
+
+.top-box {
+  background-color: #072227;
+  position: relative;
+  padding-top: 100px;
+}
+
+.middle-box {
+  margin: auto;
+  width: 50%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: none;
+  text-align: left;
+}
+.middle-box h3 {
+  text-align: left;
+}
+
+.middle-box ul {
+  text-align: left;
+}
+
+.middle-box ol {
+  text-align: left;
+}
+
+.middle-box p {
+  text-align: left;
+}
+
+.middle-box code {
+  text-align: left;
+}
+
+.js-code {
+  text-align: left;
+}
